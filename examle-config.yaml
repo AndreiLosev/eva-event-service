@@ -1,0 +1,24 @@
+bus: 
+  path: "192.168.1.47:10001"
+command: /opt/eva4/svc/softkip-event-service
+react_to_fail: true
+timeout: 
+  startup: 6.0
+user: nobody
+workers: 1
+config: 
+  db_host: 127.0.0.1
+  db_port: 5432
+  db_name: eva-evant-service-db
+  db_table: events
+  user: user1
+  password: pass1
+  db_unix_socket: false
+  events:
+    sensor:tank1/top_level:
+      name: Аварийно высокий уровень
+    sensor:tank1/bottom_level:
+      name: Аварийно низкий уровень
+    unit:tank1/pump:
+      name: Просто аварийная откачка
+
