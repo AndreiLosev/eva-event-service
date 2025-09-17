@@ -8,8 +8,8 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
+  eva_sdk: ^0.3.2
   path: ^1.9.0
-  eva_sdk: ^0.2.6
   postgres: ^3.5.6
 
 dev_dependencies:

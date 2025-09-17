@@ -34,7 +34,7 @@ void main(List<String> arguments) async {
     final dbc = DataBaseClient.getInstane(config.db);
     await dbc.connect();
     await dbc.makeTable();
-    final es = EventService.getInstane(config.events);
+    final es = EventService.getInstane(config.events, config.updateLvar);
     await es.subscribe();
     await svc().block();
     exitCode = 0;

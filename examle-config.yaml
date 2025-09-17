@@ -13,6 +13,7 @@ config:
   db_table: events
   user: user1
   password: pass1
+  update_lvar: lvar:test/alarm
   db_unix_socket: false
   events:
     sensor:tank1/top_level:

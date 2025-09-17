@@ -109,10 +109,10 @@ packages:
     dependency: "direct main"
     description:
       name: eva_sdk
-      sha256: "5c97bd186f0593bd2c8427f418802fac3a54a8e8bf736fff751944aafd9b2678"
+      sha256: "7b373a43baac6c2c2bdd807fd05885b9efb094ce22e88bb02d7823a90e6a25c6"
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.9"
+    version: "0.3.2"
   file:
     dependency: transitive
     description:
@@ -269,10 +269,10 @@ packages:
     dependency: transitive
     description:
       name: pool
-      sha256: "20fe868b6314b322ea036ba325e6fc0711a22948856475e2c2b6306e8ab39c2a"
+      sha256: "978783255c543aa3586a1b3c21f6e9d720eb315376a915872c61ef8b5c20177d"
       url: "https://pub.dev"
     source: hosted
-    version: "1.5.1"
+    version: "1.5.2"
   postgres:
     dependency: "direct main"
     description:

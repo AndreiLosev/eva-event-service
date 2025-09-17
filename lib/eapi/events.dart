@@ -11,13 +11,12 @@ class Events {
     final limit = params['limit'];
     final events = await DataBaseClient.getInstane().eventList(offset, limit);
     final es = EventService.getInstane();
-    for (var item in events) {
-      item['name'] = es.events[item['item']]?.name;
-      item['event_start'] = (item['event_start'] as DateTime).toIso8601String();
-      item['event_end'] = (item['event_end'] as DateTime?)?.toIso8601String();
-    }
+    final result = List.generate(
+      events.length,
+      (i) => events[i].addName(es.getName(events[i].item)).toMap(),
+    );
 
-    return {'events': events};
+    return {'events': result};
   }
 
   static ServiceMethod createMethod() {

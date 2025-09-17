@@ -6,15 +6,16 @@ class EventService {
   static EventService? _instanse;
 
   final Map<String, EventItem> events;
+  final Oid lvar;
 
-  EventService._(this.events);
+  EventService._(this.events, this.lvar);
 
-  factory EventService.getInstane([Map<String, EventItem>? events]) {
-    if (_instanse == null && events == null) {
+  factory EventService.getInstane([Map<String, EventItem>? events, Oid? oid]) {
+    if (_instanse == null && events == null && oid == null) {
       throw Exception("EventService need initialization");
     }
 
-    _instanse ??= EventService._(events!);
+    _instanse ??= EventService._(events!, oid!);
 
     return _instanse!;
   }
@@ -24,13 +25,33 @@ class EventService {
     await svc().subscribeOIDs(items, EventKind.local);
   }
 
+  String getName(String oid) => events[oid]?.name ?? 'any event';
+
   static Future<void> _handler(ItemState payload, String _, String _) async {
     final db = DataBaseClient.getInstane();
+    late final int? id;
     if (payload.value == true || payload.value == 1) {
-      await db.startEvent(payload.oid.asString(), payload.t);
+      id = await db.startEvent(payload.oid.asString(), payload.t);
+    } else {
+      id = await db.endEvent(payload.oid.asString(), payload.t);
+    }
+
+    if (id == null) {
       return;
     }
 
-    await db.endEvent(payload.oid.asString(), payload.t);
+    var event = await db.getEvent(id);
+
+    if (event == null) {
+      return;
+    }
+    final es = EventService.getInstane();
+    final name = es.getName(event.item);
+    event = event.addName(name);
+
+    await svc().rpc.bus.publish(
+      EapiTopic.rawStateTopic.resolve(es.lvar.asPath()),
+      serialize({'status': 1, 'value': event.toMap(), 't': evaNow()}),
+    );
   }
 }

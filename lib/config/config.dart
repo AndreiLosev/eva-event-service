@@ -1,17 +1,19 @@
 import 'package:eva_event_service/config/db.dart';
 import 'package:eva_event_service/config/event_item.dart';
+import 'package:eva_sdk/eva_sdk.dart';
 
 class Config {
   final Db db;
   final Map<String, EventItem> events;
+  final Oid updateLvar;
 
-  Config(this.db, this.events);
+  Config(this.db, this.events, this.updateLvar);
 
   factory Config.fromMap(Map map) {
     final events = <String, EventItem>{};
     for (var key in map['events'].keys) {
       events[key] = EventItem.fromMap(map['events'][key]);
     }
-    return Config(Db.fromMap(map), events);
+    return Config(Db.fromMap(map), events, Oid(map['update_lvar']));
   }
 }

@@ -14,7 +14,8 @@ CREATE INDEX IF NOT EXISTS idx_events_item ON events(item);
 
 const startEvent = """
   INSERT INTO {{ table_name }} (item, event_start)
-  VALUES ({{ item }}, {{ event_start }});
+  VALUES ({{ item }}, {{ event_start }})
+  RETURNING id;
 """;
 
 const endEvent = """
@@ -28,6 +29,7 @@ const endEvent = """
       ORDER BY event_start DESC
       LIMIT 1
   )
+  RETURNING id;
 """;
 
 const getEvents = """
@@ -41,6 +43,10 @@ const acknowledge = """
 UPDATE {{ table_name }}
 SET event_action = 1
 WHERE id = ANY({{ ids }})
+""";
+
+const selectById = """
+SELECT * FROM {{ table_name }} WHERE id = ANY({{ id }})
 """;
 
 String addTableNameToSql(String sql, String tableName) {

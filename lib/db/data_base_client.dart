@@ -1,4 +1,5 @@
 import 'package:eva_event_service/config/db.dart';
+import 'package:eva_event_service/db/event.dart';
 import 'package:eva_event_service/db/sql.dart' as sql;
 import 'package:postgres/postgres.dart';
 
@@ -10,6 +11,9 @@ class DataBaseClient {
   late final String _endEventSql;
   late final String _getEvents;
   late final String _acknowledge;
+  late final String _getEvent;
+  late final String _getEventsById;
+
   final Db _config;
   Connection? _dbConn;
 
@@ -50,24 +54,33 @@ class DataBaseClient {
     await _dbConn?.execute(_createTableSql, queryMode: QueryMode.simple);
   }
 
-  Future<void> startEvent(String oid, DateTime eventStart) async {
-    await _dbConn?.execute(
+  Future<int?> startEvent(String oid, DateTime eventStart) async {
+    final res = await _dbConn?.execute(
       Sql.named(_startEventSql),
       parameters: {'item': oid, 'event_start': eventStart},
     );
+
+    if (res == null) {
+      return null;
+    }
+
+    return res[0][0] as int;
   }
 
-  Future<void> endEvent(String oid, DateTime eventEnd) async {
-    await _dbConn?.execute(
+  Future<int?> endEvent(String oid, DateTime eventEnd) async {
+    final res = await _dbConn?.execute(
       Sql.named(_endEventSql),
       parameters: {'item': oid, 'event_end': eventEnd},
     );
+
+    if (res == null || res.isEmpty) {
+      return null;
+    }
+
+    return res.first[0] as int;
   }
 
-  Future<List<Map<String, dynamic>>> eventList([
-    int? offset,
-    int? limit,
-  ]) async {
+  Future<List<Event>> eventList([int? offset, int? limit]) async {
     offset ??= 0;
     limit ??= 10;
 
@@ -78,11 +91,35 @@ class DataBaseClient {
 
     if (res == null) return [];
 
-    return res.map((e) => e.toColumnMap()).toList();
+    return res.map((e) => Event.fromMap(e.toColumnMap())).toList();
+  }
+
+  Future<List<Event>> eventsById(List<int> ids) async {
+    final res = await _dbConn?.execute(
+      Sql.named(_getEventsById),
+      parameters: {'ids': ids},
+    );
+
+    if (res == null) return [];
+
+    return res.map((e) => Event.fromMap(e.toColumnMap())).toList();
   }
 
   Future<void> acknowledge(List<int> ids) async {
     await _dbConn?.execute(Sql.named(_acknowledge), parameters: {'ids': ids});
+  }
+
+  Future<Event?> getEvent(int id) async {
+    final res = await _dbConn?.execute(
+      Sql.named(_getEvent),
+      parameters: {'id': id},
+    );
+
+    if (res == null) {
+      return null;
+    }
+
+    return Event.fromMap(res.first.toColumnMap());
   }
 
   void _prepareSql() {
@@ -105,5 +142,13 @@ class DataBaseClient {
     _acknowledge = sql
         .addTableNameToSql(sql.acknowledge, _config.table)
         .replaceFirst('{{ ids }}', '@ids');
+
+    _getEvent = sql
+        .addTableNameToSql("${sql.selectById} limit 1", _config.table)
+        .replaceFirst('ANY({{ id }})', '@id');
+
+    _getEventsById = sql
+        .addTableNameToSql(sql.selectById, _config.table)
+        .replaceFirst('{{ id }}', '@ids');
   }
 }
