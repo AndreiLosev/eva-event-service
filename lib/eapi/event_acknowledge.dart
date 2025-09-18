@@ -13,17 +13,8 @@ class EventAcknowledge {
 
     await db.acknowledge(ids.cast());
     final events = await db.eventsById(ids.cast());
-    for (var e in events) {
-      await svc().rpc.bus.publish(
-        EapiTopic.rawStateTopic.resolve(es.lvar.asPath()),
-        serialize({
-          'status': 1,
-          'value': e.addName(es.getName(e.item)).toMap(),
-          't': evaNow(),
-        }),
-      );
-    }
-    return null;
+
+    return {'events': es.prepareToSend(events)};
   }
 
   static ServiceMethod createMethod() {

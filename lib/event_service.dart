@@ -1,5 +1,6 @@
 import 'package:eva_event_service/config/event_item.dart';
 import 'package:eva_event_service/db/data_base_client.dart';
+import 'package:eva_event_service/db/event.dart';
 import 'package:eva_sdk/eva_sdk.dart';
 
 class EventService {
@@ -25,9 +26,13 @@ class EventService {
     await svc().subscribeOIDs(items, EventKind.local);
   }
 
+  List<Map<String, dynamic>> prepareToSend(List<Event> events) {
+    return events.map((e) => e.addName(getName(e.item)).toMap()).toList();
+  }
+
   String getName(String oid) => events[oid]?.name ?? 'any event';
 
-  static Future<void> _handler(ItemState payload, String _, String _) async {
+  Future<void> _handler(ItemState payload, String _, String _) async {
     final db = DataBaseClient.getInstane();
     late final int? id;
     if (payload.value == true || payload.value == 1) {
@@ -45,13 +50,14 @@ class EventService {
     if (event == null) {
       return;
     }
-    final es = EventService.getInstane();
-    final name = es.getName(event.item);
-    event = event.addName(name);
 
     await svc().rpc.bus.publish(
-      EapiTopic.rawStateTopic.resolve(es.lvar.asPath()),
-      serialize({'status': 1, 'value': event.toMap(), 't': evaNow()}),
+      EapiTopic.rawStateTopic.resolve(lvar.asPath()),
+      serialize({
+        'status': 1,
+        'value': prepareToSend([event]).first,
+        't': evaNow(),
+      }),
     );
   }
 }

@@ -11,12 +11,8 @@ class Events {
     final limit = params['limit'];
     final events = await DataBaseClient.getInstane().eventList(offset, limit);
     final es = EventService.getInstane();
-    final result = List.generate(
-      events.length,
-      (i) => events[i].addName(es.getName(events[i].item)).toMap(),
-    );
 
-    return {'events': result};
+    return {'events': es.prepareToSend(events)};
   }
 
   static ServiceMethod createMethod() {
