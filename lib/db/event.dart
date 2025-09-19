@@ -33,7 +33,7 @@ class Event {
 
   Map<String, dynamic> toMap() => {
     'id': id,
-    'iten': item,
+    'item': item,
     'event_start': eventStart.toIso8601String(),
     'event_end': eventEnd?.toIso8601String(),
     'event_action': eventAction,

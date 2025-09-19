@@ -1,3 +1,5 @@
+import 'dart:js_interop';
+
 import 'package:eva_event_service/config/db.dart';
 import 'package:eva_event_service/db/event.dart';
 import 'package:eva_event_service/db/sql.dart' as sql;
@@ -13,6 +15,7 @@ class DataBaseClient {
   late final String _acknowledge;
   late final String _getEvent;
   late final String _getEventsById;
+  late final String _removeByEventStart;
 
   final Db _config;
   Connection? _dbConn;
@@ -83,13 +86,13 @@ class DataBaseClient {
   Future<List<Event>> eventList([
     int? offset,
     int? limit,
-    bool active = false,
+    String? where,
   ]) async {
     offset ??= 0;
     limit ??= 10;
 
-    final sql = active
-        ? _getEvents.replaceFirst('{{ WHERE }}', 'WHERE event_end is NULL')
+    final sql = where != null
+        ? _getEvents.replaceFirst('{{ WHERE }}', where)
         : _getEvents.replaceFirst("{{ WHERE }}", "");
 
     final res = await _dbConn?.execute(
@@ -115,6 +118,13 @@ class DataBaseClient {
 
   Future<void> acknowledge(List<int> ids) async {
     await _dbConn?.execute(Sql.named(_acknowledge), parameters: {'ids': ids});
+  }
+
+  Future<void> removeByStart(DateTime start) async {
+    await _dbConn?.execute(
+      Sql.named(_removeByEventStart),
+      parameters: {'event_start', start},
+    );
   }
 
   Future<Event?> getEvent(int id) async {
@@ -158,5 +168,9 @@ class DataBaseClient {
     _getEventsById = sql
         .addTableNameToSql(sql.selectById, _config.table)
         .replaceFirst('{{ id }}', '@ids');
+
+    _removeByEventStart = sql
+        .addTableNameToSql(sql.remove, _config.table)
+        .replaceFirst('{{ event_end }}', 'event_end');
   }
 }

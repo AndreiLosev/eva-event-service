@@ -39,13 +39,17 @@ void main(List<String> arguments) async {
       config.events,
       config.updateLvar,
       svcStart,
+      config.currentEventLimit,
+      config.removeEventsAfterDays,
     );
     await es.subscribe();
     await svc().block();
+
     exitCode = 0;
   } catch (e, s) {
     print({"err": e, "trace": s});
   } finally {
+    EventService.getInstane().cansel();
     await DataBaseClient.getInstane().disconnect();
     exit(exitCode);
   }

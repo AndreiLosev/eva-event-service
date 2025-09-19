@@ -13,8 +13,10 @@ config:
   db_table: events
   user: user1
   password: pass1
-  update_lvar: lvar:test/alarm
   db_unix_socket: false
+  update_lvar: lvar:test/alarm
+  current_event_limit: 30
+  remove_events_after_days: 100
   events:
     sensor:tank1/top_level:
       name: Аварийно высокий уровень

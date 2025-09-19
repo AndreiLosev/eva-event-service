@@ -1,4 +1,5 @@
 import 'package:eva_event_service/db/data_base_client.dart';
+import 'package:eva_event_service/db/event.dart';
 import 'package:eva_event_service/event_service.dart';
 import 'package:eva_sdk/eva_sdk.dart';
 
@@ -10,10 +11,21 @@ class Events {
     final offset = params['offset'];
     final limit = params['limit'];
     final active = params['active'] ?? false;
+    final es = EventService.getInstane();
 
+    final events = await getEvents(offset, limit, active);
+
+    return {'events': es.prepareToSend(events)};
+  }
+
+  Future<List<Event>> getEvents([
+    int? offset,
+    int? limit,
+    bool active = false,
+  ]) async {
     final es = EventService.getInstane();
     final db = DataBaseClient.getInstane();
-    final events = await db.eventList(offset, limit, active);
+    final events = await db.eventList(offset, limit);
 
     final activeItem = events
         .where((e) => e.eventEnd == null && es.svcStart.isBefore(e.eventStart))
@@ -40,12 +52,11 @@ class Events {
       }
     }
 
-    return {'events': es.prepareToSend(events)};
+    return events;
   }
 
   static ServiceMethod createMethod() {
     return ServiceMethod(name, Events().call, description)
-      ..optional('active', 'bool', 'default: false')
       ..optional('offset', 'u64', 'default: 0')
       ..optional('limit', 'u64', 'default: 10');
   }

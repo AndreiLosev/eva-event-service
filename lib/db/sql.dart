@@ -49,6 +49,11 @@ const selectById = """
 SELECT * FROM {{ table_name }} WHERE id = ANY({{ id }})
 """;
 
+const remove = """
+SELECT * FROM {{ table_name }}
+WHERE event_start < {{ event_end }};
+""";
+
 String addTableNameToSql(String sql, String tableName) {
   return sql.replaceAll('{{ table_name }}', tableName);
 }
