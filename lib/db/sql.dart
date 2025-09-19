@@ -33,7 +33,7 @@ const endEvent = """
 """;
 
 const getEvents = """
-SELECT * FROM {{ table_name }}
+SELECT * FROM {{ table_name }} {{ WHERE }}
 ORDER BY event_start DESC, id DESC
 LIMIT {{ limit }}
 OFFSET {{ offset }};

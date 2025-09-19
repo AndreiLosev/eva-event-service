@@ -8,15 +8,23 @@ class EventService {
 
   final Map<String, EventItem> events;
   final Oid lvar;
+  final DateTime svcStart;
 
-  EventService._(this.events, this.lvar);
+  EventService._(this.events, this.lvar, this.svcStart);
 
-  factory EventService.getInstane([Map<String, EventItem>? events, Oid? oid]) {
-    if (_instanse == null && events == null && oid == null) {
+  factory EventService.getInstane([
+    Map<String, EventItem>? events,
+    Oid? oid,
+    DateTime? svcStart,
+  ]) {
+    if (_instanse == null ||
+        events == null ||
+        oid == null ||
+        svcStart == null) {
       throw Exception("EventService need initialization");
     }
 
-    _instanse ??= EventService._(events!, oid!);
+    _instanse ??= EventService._(events, oid, svcStart);
 
     return _instanse!;
   }

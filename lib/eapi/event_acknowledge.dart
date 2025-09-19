@@ -7,7 +7,15 @@ class EventAcknowledge {
   static const description = "event acknowledge";
 
   Future<Map<String, dynamic>?> call(Map<String, dynamic> params) async {
-    final ids = params['ids'] as List;
+    final ids = params['ids'];
+
+    if (ids is! List || ids.any((id) => id is! int)) {
+      throw EvaError(
+        EvaErrorKind.invalidParams,
+        'param ids: Vek<int> is required',
+      );
+    }
+
     final db = DataBaseClient.getInstane();
     final es = EventService.getInstane();
 

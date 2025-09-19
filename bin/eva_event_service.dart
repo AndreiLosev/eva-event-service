@@ -14,6 +14,7 @@ const description = "Events service";
 int exitCode = 1;
 
 void main(List<String> arguments) async {
+  final svcStart = DateTime.now();
   try {
     final info = ServiceInfo(author, version, description)
       ..addMethod(Events.createMethod())
@@ -34,7 +35,11 @@ void main(List<String> arguments) async {
     final dbc = DataBaseClient.getInstane(config.db);
     await dbc.connect();
     await dbc.makeTable();
-    final es = EventService.getInstane(config.events, config.updateLvar);
+    final es = EventService.getInstane(
+      config.events,
+      config.updateLvar,
+      svcStart,
+    );
     await es.subscribe();
     await svc().block();
     exitCode = 0;

@@ -80,12 +80,20 @@ class DataBaseClient {
     return res.first[0] as int;
   }
 
-  Future<List<Event>> eventList([int? offset, int? limit]) async {
+  Future<List<Event>> eventList([
+    int? offset,
+    int? limit,
+    bool active = false,
+  ]) async {
     offset ??= 0;
     limit ??= 10;
 
+    final sql = active
+        ? _getEvents.replaceFirst('{{ WHERE }}', 'WHERE event_end is NULL')
+        : _getEvents.replaceFirst("{{ WHERE }}", "");
+
     final res = await _dbConn?.execute(
-      Sql.named(_getEvents),
+      Sql.named(sql),
       parameters: {'limit': limit, 'offset': offset},
     );
 

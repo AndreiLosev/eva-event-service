@@ -27,6 +27,10 @@ class Event {
     return Event(id, item, eventStart, eventEnd, eventAction, name);
   }
 
+  Event addEnd(DateTime end) {
+    return Event(id, item, eventStart, end, eventAction, name);
+  }
+
   Map<String, dynamic> toMap() => {
     'id': id,
     'iten': item,
