@@ -39,4 +39,9 @@ class Event {
     'event_action': eventAction,
     'name': name,
   };
+
+  @override
+  String toString() {
+    return toMap().toString();
+  }
 }

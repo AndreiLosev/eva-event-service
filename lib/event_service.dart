@@ -10,44 +10,41 @@ class EventService {
 
   final Map<String, EventItem> events;
   final Oid lvar;
-  final DateTime svcStart;
   final int currentEventLimit;
   final int removeEventsAfterDays;
+  late final DataBaseClient db;
   Timer? removeTimer;
 
   EventService._(
     this.events,
     this.lvar,
-    this.svcStart,
     this.currentEventLimit,
     this.removeEventsAfterDays,
   ) {
     removeOldEvents();
     removeTimer = Timer.periodic(const Duration(days: 1), removeOldEvents);
+    db = DataBaseClient.getInstane();
   }
 
   factory EventService.getInstane([
     Map<String, EventItem>? events,
     Oid? oid,
-    DateTime? svcStart,
     int? currentEventLimit,
     int? removeEventsAfterDays,
   ]) {
     if (_instanse == null &&
         (events == null ||
             oid == null ||
-            svcStart == null ||
             currentEventLimit == null ||
             removeEventsAfterDays == null)) {
       throw Exception(
-        "EventService need initialization: events: ${events?.keys} , oid: ${oid?.asString()}, svcStart: $svcStart",
+        "EventService need initialization: events: ${events?.keys} , oid: ${oid?.asString()}, currentEventLimit: $currentEventLimit, removeEventsAfterDays: $removeEventsAfterDays",
       );
     }
 
     _instanse ??= EventService._(
       events!,
       oid!,
-      svcStart!,
       currentEventLimit!,
       removeEventsAfterDays!,
     );
@@ -70,24 +67,47 @@ class EventService {
 
   String getName(String oid) => events[oid]?.name ?? 'any event';
 
-  Future<void> _handler(ItemState payload, String _, String _) async {
-    final db = DataBaseClient.getInstane();
-    late final int? id;
+  Future<void> init() async {
+    final startTime = DateTime.now();
+    final items = await svc().getItemsState(events.keys.map((e) => Oid(e)));
+
+    for (var item in items) {
+      await _handlerEvent(item);
+    }
+
+    final inactiveItems = <String>[];
+    final activeItems = <String>[];
+
+    for (var i in items) {
+      if (i.value == 1 || i.value == true) {
+        activeItems.add(i.oid.asString());
+      } else {
+        inactiveItems.add(i.oid.asString());
+      }
+    }
+
+    await db.unfinishedEvent(startTime, inactiveItems);
+    for (var i in activeItems) {
+      await db.unfinishedEventForActive(i);
+    }
+
+    await publishEvents();
+  }
+
+  Future<int?> _handlerEvent(ItemState payload) async {
     if (payload.value == true || payload.value == 1) {
-      id = await db.startEvent(payload.oid.asString(), payload.t);
+      return await db.startEvent(payload.oid.asString(), payload.t);
     } else {
-      id = await db.endEvent(payload.oid.asString(), payload.t);
+      return await db.endEvent(payload.oid.asString(), payload.t);
     }
+  }
 
-    if (id == null) {
-      return;
-    }
-
+  Future<void> publishEvents() async {
     final anHourAgo = DateTime.now().subtract(const Duration(hours: 1));
-    var events = await db.eventList(
+    var dbEvents = await db.eventList(
       0,
-      100,
-      'WHERE event_end is NULL OR event_end > $anHourAgo',
+      currentEventLimit,
+      "WHERE event_end is NULL OR event_end > '${anHourAgo.toUtc()}'",
     );
 
     if (events.isEmpty) {
@@ -96,8 +116,18 @@ class EventService {
 
     await svc().rpc.bus.publish(
       EapiTopic.rawStateTopic.resolve(lvar.asPath()),
-      serialize({'status': 1, 'value': prepareToSend(events), 't': evaNow()}),
+      serialize({'status': 1, 'value': prepareToSend(dbEvents), 't': evaNow()}),
     );
+  }
+
+  Future<void> _handler(ItemState payload, String _, String _) async {
+    final id = await _handlerEvent(payload);
+
+    if (id == null) {
+      return;
+    }
+
+    await publishEvents();
   }
 
   void removeOldEvents([_]) {

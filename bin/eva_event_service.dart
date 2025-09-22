@@ -3,6 +3,7 @@ import 'package:eva_event_service/config/config.dart';
 import 'package:eva_event_service/db/data_base_client.dart';
 import 'package:eva_event_service/eapi/event_acknowledge.dart';
 import 'package:eva_event_service/eapi/events.dart';
+import 'package:eva_event_service/eapi/x.dart';
 import 'package:eva_event_service/event_service.dart';
 import 'package:eva_sdk/eva_sdk.dart';
 import 'package:eva_sdk/src/debug_log.dart';
@@ -14,9 +15,9 @@ const description = "Events service";
 int exitCode = 1;
 
 void main(List<String> arguments) async {
-  final svcStart = DateTime.now();
   try {
     final info = ServiceInfo(author, version, description)
+      ..addMethod(X.createMethod())
       ..addMethod(Events.createMethod())
       ..addMethod(EventAcknowledge.createMethod());
 
@@ -38,10 +39,10 @@ void main(List<String> arguments) async {
     final es = EventService.getInstane(
       config.events,
       config.updateLvar,
-      svcStart,
       config.currentEventLimit,
       config.removeEventsAfterDays,
     );
+    await es.init();
     await es.subscribe();
     await svc().block();
 

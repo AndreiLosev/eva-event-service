@@ -1,5 +1,3 @@
-import 'dart:js_interop';
-
 import 'package:eva_event_service/config/db.dart';
 import 'package:eva_event_service/db/event.dart';
 import 'package:eva_event_service/db/sql.dart' as sql;
@@ -16,6 +14,8 @@ class DataBaseClient {
   late final String _getEvent;
   late final String _getEventsById;
   late final String _removeByEventStart;
+  late final String _unfinishedEvent;
+  late final String _unfinishedEventForActive;
 
   final Db _config;
   Connection? _dbConn;
@@ -60,10 +60,10 @@ class DataBaseClient {
   Future<int?> startEvent(String oid, DateTime eventStart) async {
     final res = await _dbConn?.execute(
       Sql.named(_startEventSql),
-      parameters: {'item': oid, 'event_start': eventStart},
+      parameters: {'item': oid, 'event_start': eventStart.toUtc()},
     );
 
-    if (res == null) {
+    if (res == null || res.isEmpty) {
       return null;
     }
 
@@ -73,7 +73,7 @@ class DataBaseClient {
   Future<int?> endEvent(String oid, DateTime eventEnd) async {
     final res = await _dbConn?.execute(
       Sql.named(_endEventSql),
-      parameters: {'item': oid, 'event_end': eventEnd},
+      parameters: {'item': oid, 'event_end': eventEnd.toUtc()},
     );
 
     if (res == null || res.isEmpty) {
@@ -123,7 +123,21 @@ class DataBaseClient {
   Future<void> removeByStart(DateTime start) async {
     await _dbConn?.execute(
       Sql.named(_removeByEventStart),
-      parameters: {'event_start', start},
+      parameters: {'event_start': start.toUtc()},
+    );
+  }
+
+  Future<void> unfinishedEvent(DateTime eventStart, List<String> items) async {
+    await _dbConn?.execute(
+      Sql.named(_unfinishedEvent),
+      parameters: {'event_start': eventStart.toUtc(), 'items': items},
+    );
+  }
+
+  Future<void> unfinishedEventForActive(String item) async {
+    await _dbConn?.execute(
+      Sql.named(_unfinishedEventForActive),
+      parameters: {'item': item},
     );
   }
 
@@ -138,6 +152,15 @@ class DataBaseClient {
     }
 
     return Event.fromMap(res.first.toColumnMap());
+  }
+
+  Future<int?> getCount() async {
+    final res = await _dbConn?.execute("SELECT COUNT(*) FROM ${_config.table}");
+    if (res == null && res!.isEmpty) {
+      return null;
+    }
+
+    return res.first.first as int?;
   }
 
   void _prepareSql() {
@@ -171,6 +194,17 @@ class DataBaseClient {
 
     _removeByEventStart = sql
         .addTableNameToSql(sql.remove, _config.table)
-        .replaceFirst('{{ event_end }}', 'event_end');
+        .replaceFirst('{{ event_start }}', '@event_start');
+
+    _unfinishedEvent = sql
+        .addTableNameToSql(sql.unfinishedEvent, _config.table)
+        .replaceFirst('{{ item }}', 'ANY(@items)')
+        .replaceFirst("{{ event_start }}", '@event_start')
+        .replaceAll('{{ value }}', '100');
+
+    _unfinishedEventForActive = sql
+        .addTableNameToSql(sql.unfinishedEventForActive, _config.table)
+        .replaceAll('{{ item }}', '@item')
+        .replaceAll('{{ value }}', '100');
   }
 }

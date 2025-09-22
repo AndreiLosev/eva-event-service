@@ -1,5 +1,4 @@
 import 'package:eva_event_service/db/data_base_client.dart';
-import 'package:eva_event_service/db/event.dart';
 import 'package:eva_event_service/event_service.dart';
 import 'package:eva_sdk/eva_sdk.dart';
 
@@ -10,49 +9,12 @@ class Events {
   Future<Map<String, dynamic>?> call(Map<String, dynamic> params) async {
     final offset = params['offset'];
     final limit = params['limit'];
-    final active = params['active'] ?? false;
-    final es = EventService.getInstane();
-
-    final events = await getEvents(offset, limit, active);
-
-    return {'events': es.prepareToSend(events)};
-  }
-
-  Future<List<Event>> getEvents([
-    int? offset,
-    int? limit,
-    bool active = false,
-  ]) async {
     final es = EventService.getInstane();
     final db = DataBaseClient.getInstane();
     final events = await db.eventList(offset, limit);
+    final count = await db.getCount();
 
-    final activeItem = events
-        .where((e) => e.eventEnd == null && es.svcStart.isBefore(e.eventStart))
-        .map((e) => e.item)
-        .toSet();
-
-    if (activeItem.isNotEmpty) {
-      final items = await svc().getItemsState(
-        activeItem.map((e) => Oid(e)).toList(),
-      );
-
-      for (var item in items) {
-        if (item.value == true || item.value == 1) {
-          continue;
-        }
-
-        db.endEvent(item.oid.asString(), item.t);
-
-        for (var (i, e) in events.indexed) {
-          if (e.item == item.oid.asPath()) {
-            events[i] = e.addEnd(item.t);
-          }
-        }
-      }
-    }
-
-    return events;
+    return {'events': es.prepareToSend(events), 'count': count};
   }
 
   static ServiceMethod createMethod() {

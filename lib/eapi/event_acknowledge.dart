@@ -21,7 +21,7 @@ class EventAcknowledge {
 
     await db.acknowledge(ids.cast());
     final events = await db.eventsById(ids.cast());
-
+    es.publishEvents();
     return {'events': es.prepareToSend(events)};
   }
 
