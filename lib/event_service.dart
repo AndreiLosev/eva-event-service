@@ -21,8 +21,11 @@ class EventService {
     this.currentEventLimit,
     this.removeEventsAfterDays,
   ) {
-    removeOldEvents();
-    removeTimer = Timer.periodic(const Duration(days: 1), removeOldEvents);
+    if (removeEventsAfterDays > 0) {
+      removeOldEvents();
+      removeTimer = Timer.periodic(const Duration(days: 1), removeOldEvents);
+    }
+
     db = DataBaseClient.getInstane();
   }
 
