@@ -107,7 +107,7 @@ class EventService {
     var dbEvents = await db.eventList(
       0,
       currentEventLimit,
-      "WHERE event_end is NULL OR event_end > '${anHourAgo.toUtc()}'",
+      "WHERE (event_end is NULL AND event_action != 100) OR event_end > '${anHourAgo.toUtc()}' OR (event_action = 100 AND event_start > '${anHourAgo.toUtc()}')",
     );
 
     if (events.isEmpty) {

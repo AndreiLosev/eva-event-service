@@ -42,7 +42,9 @@ class DataBaseClient {
         password: _config.password,
         database: _config.db,
       ),
-      settings: ConnectionSettings(sslMode: SslMode.disable),
+      settings: ConnectionSettings(
+        sslMode: _config.ssl ? SslMode.require : SslMode.disable,
+      ),
     );
   }
 

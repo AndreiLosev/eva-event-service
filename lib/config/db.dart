@@ -1,4 +1,6 @@
 class Db {
+  static const suportDD = ['postgres'];
+
   final String host;
   final int port;
   final String db;
@@ -6,6 +8,7 @@ class Db {
   final String user;
   final String password;
   final bool unixSocket;
+  final bool ssl;
 
   Db(
     this.host,
@@ -15,17 +18,25 @@ class Db {
     this.user,
     this.password,
     this.unixSocket,
+    this.ssl,
   );
 
-  factory Db.fromMap(Map map) {
+  factory Db.fromString(String conString) {
+    final pars = Uri.parse(conString);
+    if (!suportDD.contains(pars.scheme)) {
+      throw Exception('database: ${pars.scheme} not suported');
+    }
+    final [user, password] = pars.userInfo.split(':');
+    final params = pars.queryParameters;
     return Db(
-      map['db_host'],
-      map['db_port'],
-      map['db_name'],
-      map['db_table'],
-      map['user'],
-      map['password'],
-      map['db_unix_socket'],
+      pars.host,
+      pars.hasPort ? pars.port : 5432,
+      pars.pathSegments.last,
+      params['table'] ?? 'events',
+      user,
+      password,
+      params['unix'] == 'true',
+      params['ssl'] == 'true',
     );
   }
 }

@@ -7,13 +7,7 @@ timeout:
 user: nobody
 workers: 1
 config: 
-  db_host: 127.0.0.1
-  db_port: 5432
-  db_name: eva-evant-service-db
-  db_table: events
-  user: user1
-  password: pass1
-  db_unix_socket: false
+  db: "postgres://user1:pass1@127.0.0.1:5432/eva-evant-service-db?table=events&unix=false&ssl=false"
   update_lvar: lvar:test/alarm
   current_event_limit: 30
   remove_events_after_days: 100
@@ -21,7 +15,7 @@ config:
     sensor:tank1/top_level:
       name: Аварийно высокий уровень
     sensor:tank1/bottom_level:
-      name: Аварийно низкий уровень
+      name: Аварийно низкий уровень Аварийно низкий уровень
     unit:tank1/pump:
       name: Просто аварийная откачка
 
