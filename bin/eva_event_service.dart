@@ -26,7 +26,7 @@ void main(List<String> arguments) async {
         '/home/andrei/documents/my/eva-event-service/examle-config.yaml',
         'softkip.events.alarms',
       );
-      dbgInit('console');
+      // dbgInit('console');
     } else {
       await svc().load();
     }

@@ -18,4 +18,7 @@ config:
       name: Аварийно низкий уровень Аварийно низкий уровень
     unit:tank1/pump:
       name: Просто аварийная откачка
+    unit:tank1/valve1:
+      name: val-1-run-!!!
+
 

@@ -14,6 +14,7 @@ class EventService {
   final int removeEventsAfterDays;
   late final DataBaseClient db;
   Timer? removeTimer;
+  final _state = <String, dynamic>{};
 
   EventService._(
     this.events,
@@ -98,6 +99,10 @@ class EventService {
   }
 
   Future<int?> _handlerEvent(ItemState payload) async {
+    if (_state[payload.oid.asString()] == payload.value) {
+      return null;
+    }
+    _state[payload.oid.asString()] = payload.value;
     if (payload.value == true || payload.value == 1) {
       return await db.startEvent(payload.oid.asString(), payload.t);
     } else {
@@ -123,7 +128,7 @@ class EventService {
     );
   }
 
-  Future<void> _handler(ItemState payload, String _, String _) async {
+  Future<void> _handler(ItemState payload, String a, String b) async {
     final id = await _handlerEvent(payload);
 
     if (id == null) {
