@@ -1,24 +1,17 @@
 bus: 
-  path: "192.168.1.47:10001"
-command: /opt/eva4/svc/softkip-event-service
+  path: var/bus.ipc
+command: svc/softkip-event-service
 react_to_fail: true
 timeout: 
   startup: 6.0
 user: nobody
 workers: 1
 config: 
-  db: "postgres://user1:pass1@127.0.0.1:5432/eva-evant-service-db?table=events&unix=false&ssl=false"
+  db: "postgres://user1:pass1@192.168.1.46:5432/eva-evant-service-db?table=events&unix=false&ssl=false"
   update_lvar: lvar:test/alarm
   current_event_limit: 30
   remove_events_after_days: 100
   events:
     sensor:tank1/top_level:
       name: Аварийно высокий уровень
-    sensor:tank1/bottom_level:
-      name: Аварийно низкий уровень Аварийно низкий уровень
-    unit:tank1/pump:
-      name: Просто аварийная откачка
-    unit:tank1/valve1:
-      name: val-1-run-!!!
-
 
