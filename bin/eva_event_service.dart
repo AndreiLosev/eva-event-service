@@ -15,6 +15,8 @@ const description = "Events service";
 int exitCode = 1;
 
 void main(List<String> arguments) async {
+  DataBaseClient? dbc;
+  EventService? es;
   try {
     final info = ServiceInfo(author, version, description)
       ..addMethod(X.createMethod())
@@ -26,17 +28,17 @@ void main(List<String> arguments) async {
         '/home/andrei/documents/my/eva-event-service/examle-config.yaml',
         'softkip.events.alarms',
       );
-      // dbgInit('console');
+      dbgInit('console');
     } else {
       await svc().load();
     }
     await svc().init(info);
 
     final config = Config.fromMap(svc().config.config);
-    final dbc = DataBaseClient.getInstane(config.db);
+    dbc = DataBaseClient.getInstane(config.db);
     await dbc.connect();
     await dbc.makeTable();
-    final es = EventService.getInstane(
+    es = EventService.getInstane(
       config.events,
       config.updateLvar,
       config.currentEventLimit,
@@ -47,11 +49,11 @@ void main(List<String> arguments) async {
     await svc().block();
 
     exitCode = 0;
-  } catch (e, s) {
-    print({"err": e, "trace": s});
+  } catch (e) {
+    svc().logger.error(e);
   } finally {
-    EventService.getInstane().cansel();
-    await DataBaseClient.getInstane().disconnect();
+    es?.cansel();
+    await dbc?.disconnect();
     exit(exitCode);
   }
 }

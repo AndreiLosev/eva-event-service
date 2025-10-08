@@ -74,7 +74,7 @@ SELECT * FROM {{ table_name }} WHERE id = ANY({{ id }})
 """;
 
 const remove = """
-SELECT * FROM {{ table_name }}
+DELETE FROM {{ table_name }}
 WHERE event_start < {{ event_start }};
 """;
 
