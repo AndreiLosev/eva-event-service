@@ -11,7 +11,7 @@ class EventService {
   final Map<String, EventItem> events;
   final Oid lvar;
   final int currentEventLimit;
-  final int removeEventsAfterDays;
+  final int? removeEventsAfterDays;
   late final DataBaseClient db;
   Timer? removeTimer;
   final _state = <String, dynamic>{};
@@ -22,9 +22,9 @@ class EventService {
     this.currentEventLimit,
     this.removeEventsAfterDays,
   ) {
-    if (removeEventsAfterDays > 0) {
+    if (removeEventsAfterDays != null && removeEventsAfterDays! > 0) {
       removeOldEvents();
-      removeTimer = Timer.periodic(const Duration(days: 1), removeOldEvents);
+      removeTimer = Timer.periodic(const Duration(hours: 1), removeOldEvents);
     }
 
     db = DataBaseClient.getInstane();
@@ -37,10 +37,7 @@ class EventService {
     int? removeEventsAfterDays,
   ]) {
     if (_instanse == null &&
-        (events == null ||
-            oid == null ||
-            currentEventLimit == null ||
-            removeEventsAfterDays == null)) {
+        (events == null || oid == null || currentEventLimit == null)) {
       throw Exception(
         "EventService need initialization: events: ${events?.keys} , oid: ${oid?.asString()}, currentEventLimit: $currentEventLimit, removeEventsAfterDays: $removeEventsAfterDays",
       );
@@ -139,8 +136,11 @@ class EventService {
   }
 
   void removeOldEvents([_]) {
+    if (removeEventsAfterDays == null || removeEventsAfterDays! <= 0) {
+      return;
+    }
     final start = DateTime.now().subtract(
-      Duration(days: removeEventsAfterDays),
+      Duration(days: removeEventsAfterDays!),
     );
     DataBaseClient.getInstane().removeByStart(start);
   }

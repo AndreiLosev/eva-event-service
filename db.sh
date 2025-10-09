@@ -36,5 +36,5 @@ else
     --env POSTGRES_USER=$DB_USER \
     --env POSTGRES_PASSWORD=$DB_PASSWORD \
     --env POSTGRES_DB=$DB_NAME \
-    postgres:18rc1
+    timescale/timescaledb:latest-pg17
 fi
