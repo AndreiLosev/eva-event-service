@@ -23,7 +23,7 @@ class Config {
       events[key] = EventItem.fromMap(map['events'][key]);
     }
     return Config(
-      Db.fromString(map['db']),
+      Db.fromString(map['db'], map['table']),
       events,
       Oid(map['update_lvar']),
       map['current_event_limit'],

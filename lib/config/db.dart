@@ -21,18 +21,19 @@ class Db {
     this.ssl,
   );
 
-  factory Db.fromString(String conString) {
+  factory Db.fromString(String conString, String? table) {
     final pars = Uri.parse(conString);
     if (!suportDD.contains(pars.scheme)) {
       throw Exception('database: ${pars.scheme} not suported');
     }
     final [user, password] = pars.userInfo.split(':');
     final params = pars.queryParameters;
+    final setTable = table ?? (params['table'] ?? 'events');
     return Db(
       pars.host,
       pars.hasPort ? pars.port : 5432,
       pars.pathSegments.last,
-      params['table'] ?? 'events',
+      setTable,
       user,
       password,
       params['unix'] == 'true',
