@@ -8,7 +8,7 @@ user: nobody
 workers: 1
 config: 
   db: "postgres://user1:pass1@192.168.1.46:5432/eva-evant-service-db?unix=false&ssl=false"
-  table: "events"
+  table: "evats_test2"
   update_lvar: lvar:test/alarm
   current_event_limit: 30
   remove_events_after_days: 100

@@ -5,8 +5,8 @@ CREATE TABLE IF NOT EXISTS {{ table_name }} (
   event_start TIMESTAMP NOT NULL,
   event_end TIMESTAMP,
   event_action SMALLINT NOT NULL DEFAULT 0,
-  CONSTRAINT chk_event_dates CHECK (event_end IS NULL OR event_end >= event_start),
-  CONSTRAINT unique_item_event_start UNIQUE (item, event_start)
+  CONSTRAINT  {{ table_name }}_chk_event_dates CHECK (event_end IS NULL OR event_end >= event_start),
+  CONSTRAINT {{ table_name }}_unique_item_event_start UNIQUE (item, event_start)
 );
 """;
 

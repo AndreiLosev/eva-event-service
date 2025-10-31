@@ -49,7 +49,7 @@ void main(List<String> arguments) async {
     await svc().block();
 
     exitCode = 0;
-  } catch (e) {
+  } catch (e, s) {
     svc().logger.error(e);
   } finally {
     es?.cansel();
