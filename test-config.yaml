@@ -1,0 +1,33 @@
+bus:
+  buf_size: 8192
+  buf_ttl: 10
+  path: "localhost:10001"
+  queue_size: 8192
+  timout: null
+  type: "native"
+call_tracing: false
+command: "svc/softkip-event-service"
+user: "nobody"
+workers: 1
+enabled: true
+launcher: "eva.launcher.main"
+mem_warn: 134217728
+prepare_command: null
+react_to_fail: true
+timeout:
+  default: null
+  shutdown: null
+  startup: 10.0
+config:
+  db: "postgres://eva-user:1234@127.0.0.1:5432/eva-db"
+  table: ""
+  update_lvar: "lvar:test-1/eqweqwe"
+  current_event_limit: 30
+  remove_events_after_days: 3
+  events:
+    unit:tank1/pump:
+      name: "Старт насоса"
+    sensor:tank1/top_level:
+      name: "Верхний уровень"
+    sensor:tank1/bottom_level:
+      name: "Нижний уровень"

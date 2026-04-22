@@ -166,6 +166,9 @@ class DataBaseClient {
   }
 
   void _prepareSql() {
+    if (_config.table.isEmpty) {
+      throw Exception("The table name for events must not be an empty string");
+    }
     _createTableSql = sql.addTableNameToSql(sql.createTable, _config.table);
     _startEventSql = sql
         .addTableNameToSql(sql.startEvent, _config.table)
