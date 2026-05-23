@@ -16,6 +16,7 @@ class DataBaseClient {
   late final String _removeByEventStart;
   late final String _unfinishedEvent;
   late final String _unfinishedEventForActive;
+  late final String _setEvent;
 
   final Db _config;
   Connection? _dbConn;
@@ -72,6 +73,29 @@ class DataBaseClient {
     return res[0][0] as int;
   }
 
+  Future<int?> setEvent(
+    String oid,
+    DateTime eventStart,
+    DateTime? eventEnd, [
+    int? action,
+  ]) async {
+    final res = await _dbConn?.execute(
+      Sql.named(_setEvent),
+      parameters: {
+        'item': oid,
+        'event_start': eventStart.toUtc(),
+        'event_end': ?eventEnd?.toUtc(),
+        'event_action': ?action,
+      },
+    );
+
+    if (res == null || res.isEmpty) {
+      return null;
+    }
+
+    return res.first[0] as int;
+  }
+
   Future<int?> endEvent(String oid, DateTime eventEnd) async {
     final res = await _dbConn?.execute(
       Sql.named(_endEventSql),
@@ -93,9 +117,7 @@ class DataBaseClient {
     offset ??= 0;
     limit ??= 10;
 
-    final sql = where != null
-        ? _getEvents.replaceFirst('{{ WHERE }}', where)
-        : _getEvents.replaceFirst("{{ WHERE }}", "");
+    final sql = _getEvents.replaceFirst('{{ WHERE }}', where ?? '');
 
     final res = await _dbConn?.execute(
       Sql.named(sql),
@@ -156,8 +178,10 @@ class DataBaseClient {
     return Event.fromMap(res.first.toColumnMap());
   }
 
-  Future<int?> getCount() async {
-    final res = await _dbConn?.execute("SELECT COUNT(*) FROM ${_config.table}");
+  Future<int?> getCount([String? where]) async {
+    final res = await _dbConn?.execute(
+      "SELECT COUNT(*) FROM ${_config.table} ${where ?? ''}",
+    );
     if (res == null && res!.isEmpty) {
       return null;
     }
@@ -211,5 +235,12 @@ class DataBaseClient {
         .addTableNameToSql(sql.unfinishedEventForActive, _config.table)
         .replaceAll('{{ item }}', '@item')
         .replaceAll('{{ value }}', '100');
+
+    _setEvent = sql
+        .addTableNameToSql(sql.setEvent, _config.table)
+        .replaceAll('({{ item }}', '@item')
+        .replaceAll('{{ event_start }}', '@event_start')
+        .replaceAll('{{ event_end }}', '@event_end')
+        .replaceAll('{{ event_action }}', '{{ event_action }');
   }
 }

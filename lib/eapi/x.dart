@@ -1,10 +1,12 @@
 import 'package:eva_event_service/eapi/event_acknowledge.dart';
+import 'package:eva_event_service/eapi/event_set.dart';
 import 'package:eva_event_service/eapi/events.dart';
 import 'package:eva_sdk/eva_sdk.dart';
 
 class X {
   static const name = "x";
-  static const description = "execute method events or event.acknowledge";
+  static const description =
+      "execute method events or event.acknowledge or event.set";
 
   Future<Map<String, dynamic>?> call(Map<String, dynamic> params) async {
     final method = params['method'];
@@ -13,6 +15,7 @@ class X {
     return switch (method) {
       'events' => Events().call(params1.cast()),
       'event.acknowledge' => EventAcknowledge().call(params1.cast()),
+      'event.set' => EventSet().call(params1.cast()),
       _ => throw EvaError(
         EvaErrorKind.methodNotFound,
         'undefined method: $method',
@@ -22,7 +25,11 @@ class X {
 
   static ServiceMethod createMethod() {
     return ServiceMethod(name, X().call, description)
-      ..required('method', 'string', "events or event.acknowledge")
-      ..required('params', 'dict', 'see method events or event.acknowledge');
+      ..required('method', 'string', "events or event.acknowledge or event.set")
+      ..required(
+        'params',
+        'dict',
+        'see method events or event.acknowledge or event.set',
+      );
   }
 }

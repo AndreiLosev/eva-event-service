@@ -29,6 +29,13 @@ const unfinishedEvent = """
   );
 """;
 
+const setEvent = """
+  INSERT INTO {{ table_name }} (item, event_start, event_end, event_action)
+  VALUES ({{ item }}, {{ event_start }}, {{ event_end }}, {{ event_action }})
+  ON CONFLICT (item, event_start) DO NOTHING
+  RETURNING id;
+""";
+
 const unfinishedEventForActive = """
 UPDATE {{ table_name }}
 SET event_action = {{ value }}

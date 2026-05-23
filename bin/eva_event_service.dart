@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:eva_event_service/config/config.dart';
 import 'package:eva_event_service/db/data_base_client.dart';
 import 'package:eva_event_service/eapi/event_acknowledge.dart';
+import 'package:eva_event_service/eapi/event_set.dart';
 import 'package:eva_event_service/eapi/events.dart';
 import 'package:eva_event_service/eapi/x.dart';
 import 'package:eva_event_service/event_service.dart';
@@ -21,7 +22,8 @@ void main(List<String> arguments) async {
     final info = ServiceInfo(author, version, description)
       ..addMethod(X.createMethod())
       ..addMethod(Events.createMethod())
-      ..addMethod(EventAcknowledge.createMethod());
+      ..addMethod(EventAcknowledge.createMethod())
+      ..addMethod(EventSet.createMethod());
 
     if (arguments.contains('--local')) {
       await svc().debugLoad(
